@@ -4,156 +4,766 @@
         <title></title>
         <meta charset="utf-8" />
         <link href="kendo/styles/kendo.mobile.all.min.css" rel="stylesheet" />
+        <script src="kendo/js/kendo.mobile.min.js"></script>
+        <script src="kendo/js/jquery.min.js"></script>
         <link href="styles/main.css" rel="stylesheet" />
 
         <script src="cordova.js"></script>
-        <script src="kendo/js/jquery.min.js"></script>
-        <script src="kendo/js/kendo.mobile.min.js"></script>
-        <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=true"></script>
-
-        <script src="scripts/login.js"></script>
-        <script src="scripts/location.js"></script>
-        <script src="scripts/weather.js"></script>
-        <script src="scripts/app.js"></script>
+        <!--  <script type="text/javascript" charset="utf-8" src="Plugins/SQLite/SQLitePlugin.js"></script>-->
+        <script data-main="scripts/main" src="scripts/libs/require.js"></script>
+        <script data-main="scripts/main" src="scripts/libs/base64.js"></script>
 
     </head>
     <body>
-        <!--Home-->
-        <div id="tabstrip-home" 
-             data-role="view"  
-             data-title="Home">
-
-            <div data-role="content" class="view-content">
-                <h1>Welcome!</h1>
-                <a id="skin-change" data-role="button" data-click="app.changeSkin">Flat</a>
-                <p>
-                    Icenium&trade; enables you to build cross-platform device applications regardless of your
-                    development platform by combining the convenience of a local development toolset with the
-                    power and flexibility of the cloud.
-                </p>
-                <div class="img"></div>
-            </div>
-        </div>
-
         <!--Login-->
-        <div id="tabstrip-login" 
-             data-role="view"  
-             data-title="Login" 
-             data-model="app.loginService.viewModel">
+        <div data-role="view" id="LoginView" 
+             data-title="AMS360 - LOGIN"
+             data-layout="LoginLayout"
+             data-init="app.views.login.init"
+             data-before-show="app.views.login.beforeShow"
+             data-show="app.views.login.show"
+             data-model="app.views.login.viewModel">
 
-            <div data-role="content" class="view-content">
-                <div class="logo"></div>
-                <h3 data-bind="invisible: isLoggedIn">Enter your credentials:</h3>
-                <h1 class="welcome" data-bind="visible: isLoggedIn">
-                    Welcome, <span data-bind="text: username"></span>!
-                </h1>
-
-                <ul data-role="listview" data-style="inset" data-bind="invisible: isLoggedIn">
-                    <li>
+            <div class="view-content">
+                <div data-bind="invisible: isAuthenticated">
+                    <h2>Login</h2>
+                    <div>
                         <label>
-                            Username
-                            <input type="text" data-bind="value: username"/>
+                            <div>Username</div>
+                            <input class="ipin-textbox" type="text" data-bind="value: loginUsername" />
                         </label>
-                    </li>
-                    <li>
-                        <label>
-                            Password
-                            <input type="password" data-bind="value: password" />
-                        </label>
-                    </li>
-                </ul>
-
-                <div class="buttonArea">
-                    <a id="login" data-role="button" data-bind="click: onLogin, invisible: isLoggedIn" class="login-button">Login</a>
-                    <a id="logout" data-role="button" data-bind="click: onLogout, visible: isLoggedIn" class="login-button">Logout</a>
-                </div>
-            </div>
-
-        </div>
-
-        <!--Location-->
-        <div id="tabstrip-location" 
-             data-role="view"  
-             data-title="Location" 
-             data-init="app.locationService.initLocation" 
-             data-show="app.locationService.show" 
-             data-hide="app.locationService.hide" 
-             data-model="app.locationService.viewModel" 
-             data-stretch="true">
-
-            <div data-role="content">
-                <div id="map-search-wrap">
-                    <button id="map-navigate-home" data-bind="click: onNavigateHome"></button>
-                    <form onsubmit="return false;">
-                        <input id="map-address" type="search" data-bind="value: address" placeholder="Address"/>
-                        <input id="map-search" type="submit" value="" data-bind="click: onSearchAddress" />
-                    </form>
-                </div>
-                <div id="map-canvas"></div>
-            </div>
-
-        </div>
-
-        <!--Weather-->
-        <div id="tabstrip-weather" 
-             data-role="view"  
-             data-title="Weather" 
-             data-model="app.weatherService.viewModel">
-
-            <div data-role="content" class="weather">
-                <div data-role="scroller">
-                    <h1>20-Day Forecast</h1>
-
-                    <div class="separator">
-                        <div class="dark"></div>
-                        <div class="light"></div>
                     </div>
+                    <div>
+                        <label>
+                            <div>Password</div>
+                            <input class="ipin-textbox" type="password" data-bind="value: loginPassword" />
+                        </label>
+                    </div>
+                    <div>
+                        <label>
+                            <div>Database</div>
+                            <select id="DatabaseSelect" data-role="dropdownlist" data-bind="source: databaseList, value: selectedDatabase" data-text-field="DatabaseName" data-value-field="DatabaseCode">
+                            </select>
+                        </label>
+                    </div>
+                    <div type="button" data-role="button" data-bind="click: login">Log In</div>
 
-                    <ul class="forecast-list" 
-                        data-role="listview" 
-                        data-bind="source: weatherDataSource" 
-                        data-template="weather-forecast-template">                    
-                    </ul>
                 </div>
+                <div data-bind="visible: isAuthenticated">
+                    <div type="button" data-role="button" data-bind="click: logout">Log Out</div>
+                </div>
+
             </div>
         </div>
 
-        <!--Weather forecast template-->
-        <script type="text/x-kendo-tmpl" id="weather-forecast-template">
-            <div>
-                <div class="position-left">
-                    <span class="weather-info date">${day}</span>
-                </div>
-                <div class="position-right">
-                    <span class="weather-info temperature high">${highTemperature}<sup>&deg;</sup></span>
-                    <span class="weather-info temperature low">${lowTemperature}<sup>&deg;</sup></span>
-                </div>
-                <div class="position-center">
-                    <span class="weather-icon ${image}"></span>
-                </div>
-            </div>
-        </script>
-
-        <!--Layout-->
-        <div data-role="layout" data-id="tabstrip-layout" >
-
-            <!--Header-->
+        <!--Main-->
+        <div data-role="view" id="TheView" 
+             data-title="AMS360 - MAIN"
+             data-layout="baseLayout"
+             data-init="app.views.main.init"
+             data-before-show="app.views.main.beforeShow"
+             data-show="app.views.main.show"
+             data-model="app.views.main.viewModel">
             <div data-role="header">
                 <div data-role="navbar">
-                    <span data-role="view-title"></span>
+                    <a onclick="app.close()" data-role="button" data-align="left">Close</a>
+                    <span data-role="view-title">AMS360</span>
+                </div>
+            </div>
+            <h2>Menu</h2>
+            <ul data-role="listview" data-style="inset" >
+                <li >
+                    <a href="#GroupingView">Scan Assets </a>
+                </li>
+                <li >
+                    <a href="#UploadView">Upload Offline Assets</a>
+                </li>
+                <li >
+                    <a href="#SyncView">Download Data</a>
+                </li>
+
+            </ul>
+
+        </div>
+
+        <!--Area-->
+        <div data-role="view" id="AreaView" 
+             data-title="AMS360 - AREA"
+             data-layout=""
+             data-init="app.views.area.init"
+             data-before-show="app.views.area.beforeShow"
+             data-show="app.views.area.show">
+            <div data-role="header">
+                <div data-role="navbar">
+                    <a data-role="backbutton" data-align="left" href="#GroupingView">Back</a>
+                    <span data-role="view-title">AMS360</span>
                 </div>
             </div>
 
-            <!--Footer-->
+            <ul id="area-listview" data-role="listview" data-style="inset"></ul>
+
+        </div>
+
+        <!--Location Page-->
+        <div data-role="view" id="LocationView" 
+             data-title="AMS360 - Location"
+             data-layout="baseLayout"
+             data-init="app.views.location.init"
+             data-before-show="app.views.location.beforeShow"
+             data-model="app.views.location.viewModel"
+             data-show="app.views.location.show">
+            <div data-role="header">
+                <div data-role="navbar">
+                    <a data-role="backbutton" data-align="left" href="#GroupingView">Back</a>
+                    <span data-role="view-title">AMS360</span>
+                </div>
+            </div>
+            <div class="view-content">
+                <h2>Location</h2>
+                <div>
+                    <label>
+                        <div>Sites</div>
+                        <select id="SiteSelect" data-role="dropdownlist" data-bind="source: siteList, events: { change: GetBuildings}" data-text-field="SiteDescription" data-value-field="SiteID">
+                        </select>
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <div>Buildings</div>
+                        <select id="BuildingSelect" data-role="dropdownlist" data-bind="source: buildingList, events: { change: GetRooms}" data-text-field="BuildingDescription" data-value-field="BuildingCode">
+                        </select>
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <div>Rooms</div>
+                        <select id="RoomSelect" data-role="dropdownlist" data-bind="source: roomList" data-text-field="RoomCode" data-value-field="RoomCode">
+                        </select>
+                    </label>
+                </div>
+                <div type="button" data-role="button" data-bind="click: DoCapture">Enter Room</div>
+            </div>
+        </div>
+
+        <!--Grouping Page-->
+        <div data-role="view" id="GroupingView" 
+             data-title="AMS360 - GROUPINGS"
+             data-layout="baseLayout"
+             data-init="app.views.grouping.init"
+             data-before-show="app.views.grouping.beforeShow"
+             data-show="app.views.grouping.show"
+             data-model="app.views.grouping.viewModel">
+            <div data-role="header">
+                <div data-role="navbar">
+                    <a data-role="backbutton" data-align="left" href="#TheView">Back</a>
+                    <span data-role="view-title">AMS360</span>
+                </div>
+            </div>
+            <h2>Asset Groups</h2>
+            <ul data-role="listview" data-style="inset">
+                <li >
+                    <a onclick="app.views.grouping.navgeneral()" >General</a>
+                </li>
+                <li >
+                    <a onclick="app.views.grouping.navvehicle()" >Vehicle</a>
+                </li>
+                <li >
+                    <a onclick="app.views.grouping.navland()" >Land</a>
+                </li>
+                <li >
+                    <a onclick="app.views.grouping.navbuilding()" >Building</a>
+                </li>
+                <li >
+                    <a onclick="app.views.grouping.navelectricity()" >Electricity</a>
+                </li>
+                <li >
+                    <a onclick="app.views.grouping.navsanitation()" >Sanitation</a>
+                </li>
+                <li >
+                    <a onclick="app.views.grouping.navrailway()" >Railway</a>
+                </li>
+                <li >
+                    <a id="RoadItem" onclick="app.views.grouping.navroad()">Roads</a>
+                </li>
+            </ul>
+
+        </div>
+
+        <!--Capture General Page-->
+        <div data-role="view" id="GeneralView" 
+             data-title=""
+             data-layout="baseLayout"
+             data-init="app.views.general.init"
+             data-before-show="app.views.general.beforeShow"
+             data-show="app.views.general.show">
+            <div data-role="header">
+                <div data-role="navbar">
+                    <a data-role="backbutton" data-align="left" href="#LocationView">Back</a>
+
+                    <ul data-index="0" data-role="buttongroup">
+
+                        <li data-bind="click: setOnline">online</li>
+                        <li data-bind="click: setOffline">offline</li>
+
+                    </ul>
+                    <a data-bind="click: submit" data-role="button" class="ipin-button" data-align="right">Submit</a>
+                </div>
+            </div>
+            <div class="view-content">
+                <h2>General Assets in <span data-bind="html: selectedRoom"></span></h2>
+                <div>
+                    <label>
+                        <div>Barcoded</div>
+                        <select style="width:50px;" id="BarcodedSelect" data-role="dropdownlist" data-bind="source: yesNoList, events: { change: DoBarcodings}" data-text-field="Name" data-value-field="Name">
+                        </select>
+                    </label>
+                </div>
+                <div class="BarcodeVisible">
+                    <div style="width:80%;height:40px; font-size: 30px;" id="scanButton" type="button" data-role="button" data-bind="click: _scan">Scan</div>
+
+                </div>
+                <div class="BarcodeVisible">
+                    <label>
+                        <div>Barcode</div>
+                        <input id="BarcodeTextBox" class="ipin-textbox" type="text" data-bind="value: barcode, events: { focusout: GetOldData}" />
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <div>Parent Barcode</div>
+                        <input id="ParentBarcodeTextbox" style='display: inline-block; width:78%;' class="ipin-textbox" type="text" data-bind="value: parentBarcode" />
+                        <div style='display: inline-block;'>
+                            <div type="button" data-role="button" data-bind="click: _scanParent">scan</div>
+                        </div>
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <div>Old Barcode</div>
+                        <input class="ipin-textbox" type="text" data-bind="value: oldBarcode" />
+                    </label>
+                </div>
+                <div data-role="fieldcontain">
+                    <div >
+                        <label for="ClassificationTextbox">
+                            Classification
+                        </label>
+                    </div>
+                    <div style='display: inline-block; width:85%;'>
+                        <input class="ipin-textbox" type="text" data-bind="value: classificationText" disabled="disabled" />
+                        <input type="hidden" data-bind="value: classificationID"/>
+                    </div>
+                    <div style='display: inline-block;'>
+                        <div type="button" data-role="button" data-bind="click: getClassification">...</div>
+
+                    </div>
+                </div>
+                <div data-role="fieldcontain">
+                    <div >
+                        <label for="AssetTypeTextbox">
+                            AssetType
+                        </label>
+                    </div>
+                    <div style='display: inline-block; width:85%;'>
+                        <input class="ipin-textbox" type="text" data-bind="value: assetTypeText" disabled="disabled" value="" />
+                        <input type="hidden" data-bind="value: assetTypeID"/>
+                    </div>
+                    <div style='display: inline-block;'>
+                        <div type="button" data-role="button" data-bind="click: getAssetType">...</div>
+                    </div>
+                </div>
+                <div>
+                    <label>
+                        <div>Description</div>
+                        <input class="ipin-textbox" type="text" data-bind="value: description" />
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <div>Make</div>
+                        <input class="ipin-textbox" type="text" data-bind="value: make" />
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <div>Model</div>
+                        <input class="ipin-textbox" type="text" data-bind="value: model" />
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <div>Serial Number</div>
+                        <input id="SerialNumberTextbox" style='display: inline-block; width:78%;' class="ipin-textbox" type="text" data-bind="value: serialNumber" />
+                        <div style='display: inline-block;'>
+                            <div type="button" data-role="button" data-bind="click: _scanSerial">scan</div>
+                        </div>
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <div>Custodian</div>
+                        <select id="CustodianSelect" data-role="dropdownlist" data-bind="source: custodianList,value: selectedCustodian" data-text-field="Name" data-value-field="Username">
+                        </select>
+                    </label>
+                </div>
+                <div class="BarcodeInVisible">
+                    <label>
+                        <div>Qty</div>
+                        <input class="ipin-textbox" type="text" data-bind="value: qty" />
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <div>Condition</div>
+                        <select id="ConditionSelect" data-role="dropdownlist" data-bind="source: conditionList,value: selectedCondition" data-text-field="Name" data-value-field="Name">
+                        </select>
+                    </label>
+                </div>
+                <div data-role="fieldcontain" id="GeneralSpecFields">
+                </div>
+                <div data-role="fieldcontain">
+                    <a data-bind="click: photo" data-role="button" class="ipin-button" style="display:inline-block">Take Photo </a>
+
+                </div>
+                <div data-role="fieldcontain">
+                    <img alt="Photo" style="width: 100%; height: 400px;" id="GeneralAssetImage" />
+                </div>
+            </div>
+        </div>
+
+        <!--Capture Infra Page-->
+        <div data-role="view" id="CaptureView" 
+             data-title="AMS360 - CAPTURE ASSETS"
+             data-layout=""
+             data-init="app.views.captureinfra.init"
+             data-before-show="app.views.captureinfra.beforeShow"
+             data-show="app.views.captureinfra.show"
+             data-model="app.views.captureinfra.viewModel">
+            <div data-role="header">
+                <div data-role="navbar">
+                    <a data-role="backbutton" data-align="left" href="#AreaView">Back</a>
+                    <span data-role="view-title">AMS360</span>
+                </div>
+            </div>
+            <div style="background-color:black;">
+                <div>
+                    <div style="display: inline-block;">
+                        <a data-theme="b" data-role="button" id="RefreshMapButton">Refresh</a>
+                    </div>
+                    <div style="display: inline-block;">
+
+                        <a data-role="button" id="SelectLayerButton">
+                            Select Layers
+                        </a>
+                    </div>
+                    <div style="display: inline-block; margin-left: 20px; color:white;" id="ModeDisplay">
+                    </div>
+                    <div style="display: inline-block;">
+                        <a  data-role="button"  id="NewLineButton">Add New Line</a>
+                    </div>
+                    <div style="display: inline-block;">
+                        <a  data-role="button"  id="NewPointButton">Add New Point</a>
+                    </div>
+                    <div style="display: inline-block;">
+                        <a  data-role="button"  id="NewPolygonButton">Add New Polygon</a>
+                    </div>
+                    <div style="display: inline-block;">
+                        <a  data-role="button"  id="VerificationModeButton">Verification</a>
+                    </div>
+                </div>
+                <div>
+
+                    <div style="display: inline-block;">
+                        <a  data-role="button"  id="PointCaptureButton">Capture Point</a>
+                    </div>
+                    <div style="display: inline-block;">
+                        --
+                    </div>
+                    <div style="display: inline-block;">
+                        <a data-role="button" id="StartLineCaptureButton">Start Capture Line</a>
+                    </div>
+                    <div style="display: inline-block;">
+                        <a  data-role="button"  id="LineCaptureButton">Capture Line</a>
+                    </div>
+                    <div style="display: inline-block;">
+                        <a  data-role="button"  id="EndLineCaptureButton">End Capture Line</a>
+                    </div>
+                    <div style="display: inline-block;">
+                        --
+                    </div>
+                    <div style="display: inline-block;">
+                        <a  data-role="button"  id="StartPolygonCaptureButton">Start Capture Polygon</a>
+                    </div>
+                    <div style="display: inline-block;">
+                        <a  data-role="button"  id="PolygonCaptureButton">Capture Polygon</a>
+                    </div>
+                    <div style="display: inline-block;">
+                        <a  data-role="button"  id="EndPolygonCaptureButton">End Capture Polygon</a>
+                    </div>
+                </div>
+            </div>
+            <div data-role="content">
+                <div style="display: inline-table; vertical-align: top; padding: 0px 0px 0px 0px;;
+                     margin: 0px 0px 0px 0px; width:49%;">
+                    <div data-role="header">
+                        <div data-role="navbar">
+                            <h1>
+                                Map
+                            </h1>
+                        </div>
+                    </div>
+                    <div class="geomap" style="width: 100%; height: 600px; min-width: 500px;">
+                    </div>
+                </div>
+                <div style="display: inline-table; vertical-align: top; padding: 0px 0px 0px 0px;;
+                     margin: 0px 0px 0px 0px; width:49%;">
+                    <div data-role="header">
+                        <div data-role="navbar">
+                            <h1>
+                                Info
+                            </h1>
+                        </div>
+                    </div>
+                    <div data-role="fieldcontain">
+                        <label for="BarcodeTextbox">
+                            Barcode:
+                        </label>
+                        <input class="ipin-textbox" type="text" name="BarcodeTextbox" id="BarcodeTextbox" value="" />
+                        <input type="hidden" name="IDTextbox" id="IDTextbox" value="" />
+                    </div>
+                    <div data-role="fieldcontain">
+                        <label for="OldBarcodeTextbox">
+                            Old Barcode:
+                        </label>
+                        <input class="ipin-textbox" type="text" name="OldBarcodeTextbox" id="OldBarcodeTextbox" value="" />
+                    </div>
+                    <div data-role="fieldcontain">
+                        <div >
+                            <label for="ClassificationTextbox">
+                                Classification:
+                            </label>
+                        </div>
+                        <div style='display: inline-block; width:90%;'>
+                            <input class="ipin-textbox" type="text" name="ClassificationTextbox" id="ClassificationTextbox" disabled="disabled" value="" />
+                            <input type="hidden" name="ClassificationIDTextbox" id="ClassificationIDTextbox"/>
+                        </div>
+                        <div style='display: inline-block;'>
+                            <input id="ClassificationButton" data-role='button' type='button' value='...' />
+                        </div>
+                    </div>
+                    <div data-role="fieldcontain">
+                        <div >
+                            <label for="AssetTypeTextbox">
+                                AssetType:
+                            </label>
+                        </div>
+                        <div style='display: inline-block; width:90%;'>
+                            <input class="ipin-textbox" type="text" name="AssetTypeTextbox" id="AssetTypeTextbox" disabled="disabled" value="" />
+                            <input type="hidden" name="AssetTypeIDTextbox" id="AssetTypeIDTextbox"/>
+                        </div>
+                        <div style='display: inline-block;'>
+                            <input id="AssetTypeButton" data-role='button' type='button' value='...' />
+                        </div>
+                    </div>
+                    <div data-role="fieldcontain">
+                        <label for="DescriptionTextbox">
+                            Description:
+                        </label>
+                        <input class="ipin-textbox" type="text" name="DescriptionTextbox" id="DescriptionTextbox" value="" />
+                    </div>
+
+                    <div data-role="fieldcontain">
+                        <label for="ConditionSelect">
+                            Condition:
+                        </label>
+                        <select class="ipin-select" id="ConditionSelect">
+                        </select>
+                    </div>
+                    <div data-role="fieldcontain" id="SpecFields">
+                    </div>
+                    <div data-role="fieldcontain">
+                        <a id="PhotoButton" data-role="button" class="ipin-button" style="display:inline-block">Take Photo </a>
+                        <input class="ipin-button" type="button" data-role="button" value="Submit" id="SubmitButton" style="display:inline-block" />
+                    </div>
+                    <div data-role="fieldcontain">
+                        <img alt="Photo" style="width: 100%; height: 400px;" id="AssetImage" />
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <!--Class SelectionPage-->
+        <div id="ClassSelectionPage" 
+             data-role="view"  
+             data-init="app.views.general.init"
+             data-before-show="app.views.general.beforeShow"
+             data-model="app.views.general.viewModel"
+             data-show="app.views.general.show">
+            <div data-role="header" >
+                <div data-role="navbar">
+                    <h3>
+                        Select a Classification
+                    </h3>
+                    <a data-role="backbutton" data-align="left">Back</a>
+                </div>
+            </div>
+            <div style="margin:10px;">
+                <div style='display: inline-block; margin-right:62px; '>
+                    <label for="ClassSearchTextbox">
+                        Search:
+                    </label>
+                </div>
+                <div style='display: inline-block; width:400px;'>
+                    <input  class="ipin-textbox" type="text" data-bind="value: ClassSearchTextbox"/>
+                </div>
+                <div style='display: inline-block; '>
+
+                    <div type="button" data-role="button" data-bind="click: SearchClass">Search</div>
+                </div>
+            </div>
+            <div style="margin:10px;">
+
+                <div>
+                    <ul id="class-listview" data-role="listview" ></ul>
+                </div>
+            </div>
+
+        </div>
+        <!--AssetType SelectionPage-->
+        <div id="AssetTypeSelectionPage" data-role="view" data-init="app.views.general.init"
+             data-before-show="app.views.general.beforeShow"
+             data-model="app.views.general.viewModel"
+             data-show="app.views.general.show">
+            <div data-role="header" >
+                <div data-role="navbar">
+                    <h3>
+                        Select an Asset Type
+                    </h3>
+                    <a data-role="backbutton" data-align="left">Back</a>
+                </div>
+            </div>
+            <div style="margin:10px;">
+                <div style='display: inline-block; margin-right:25px;'>
+                    <label for="AssetTypeSearchTextbox">
+                        Search:
+                    </label>
+                </div>
+                <div style='display: inline-block; width:400px;'>
+                    <input class="ipin-textbox" type="text" data-bind="value: TypeSearchTextbox" />
+                </div>
+                <div style='display: inline-block; '>
+                    <div type="button" data-role="button" data-bind="click: searchType">Search</div>
+                </div>
+            </div>
+            <div style="margin:10px;">
+
+                <div style='display: inline-block; width:400px;'>
+                    <ul id="assettype-listview" data-role="listview" data-style="inset"></ul>
+                </div>
+
+            </div>
+
+        </div>
+        <!--LayerSelectionPage-->
+
+        <div id="LayerSelectionPage" data-role="view" >
+            <div data-role="header" >
+                <div data-role="navbar">
+                    <h3>
+                        Select Layers
+                    </h3>
+                    <a data-role="backbutton" data-align="left">Back</a>
+                </div>
+            </div>
+
+            <div data-role="controlgroup" data-type="horizontal" style="margin-top:15px;">
+                <input type="radio" name="radio-choice-1" id="SelectAllButton" value="Select-All" style="margin:5px;" />
+                <label for="SelectAllButton" style="font-size:1.4em;">
+                    Select All
+                </label>
+                <input type="radio" name="radio-choice-1" id="DeselectAllButton" value="Deselect-All" style="margin:5px;" />
+                <label for="DeselectAllButton" style="font-size:1.4em;">
+                    Deselect All
+                </label>
+            </div>
+            <div data-layout="checklayout">
+                <ul id="LayerList" data-role="listview" data-style="inset"></ul>
+            </div>
+            <a data-role="button" class="ipin-button" id="ApplyLayerButton">Apply</a>
+
+        </div>
+        <!--SpecSelection-->
+        <div id="SpecSelectionPage" data-role="modalview" style="display: none; width: 95%; height: 90%;">
+            <div data-role="header" >
+                <div data-role="tabstrip">
+                    <h3>
+                        Select Value
+                    </h3>
+
+                </div>
+            </div>
+            <div class="view-content">
+                <div id="SpecSelectionList">
+                </div>
+            </div>
+            <div data-role="footer">
+                <div data-role="navbar">
+                    <a data-click="app.closeSpecModal" data-role="button" data-align="right">Close</a>
+                </div>
+
+            </div>
+        </div>
+
+        <!--Sync-->
+        <div data-role="view" id="SyncView" 
+             data-title="AMS360 - SYNC"
+             data-layout="baseLayout"
+             data-init="app.views.sync.init"
+             data-before-show="app.views.sync.beforeShow"
+             data-show="app.views.sync.show"
+             data-model="app.views.sync.viewModel">
+            <div data-role="header">
+                <div data-role="navbar">
+                    <a data-role="backbutton" data-align="left">Back</a>
+                    <span data-role="view-title">AMS360</span>
+                </div>
+            </div>
+            <div class="view-content">
+                <h2>Download Data</h2>
+                <label >
+                    <input type="checkbox" data-bind="checked: IncludeAssets" />
+                    Include Assets (Only needed for offline mode)
+                </label>
+
+                <ul data-role="listview">
+                    <li >
+                        <div data-bind="html: SyncUser" ></div>
+                    </li>
+                    <li >
+                        <div data-bind="html: SyncRoom" ></div>
+                    </li>
+                    <li >
+                        <div data-bind="html: SyncBuilding" ></div>
+                    </li>
+                    <li >
+                        <div data-bind="html: SyncSite" ></div>
+                    </li>
+                    <li >
+                        <div data-bind="html: SyncClassification" ></div>
+                    </li>
+                    <li >
+                        <div data-bind="html: SyncAssetType" ></div>
+                    </li>
+                    <li >
+                        <div data-bind="html: SyncAssetTypeSpecLink" ></div>
+                    </li>
+                    <li >
+                        <div data-bind="html: SyncAssetTypeSpecValue" ></div>
+                    </li>
+                    <li >
+                        <div data-bind="html: SyncAssetTypeSpec" ></div>
+                    </li>
+                    <li >
+                        <div data-bind="html: SyncSpecValue" ></div>
+                    </li>
+                    <li >
+                        <div data-bind="html: SyncAsset" ></div>
+                    </li>
+
+                </ul>
+                <!-- <div data-bind="html: SyncArea" ></div>
+                    
+                <div data-bind="html: SyncAssetCapture" ></div>
+                <div data-bind="html: SyncGISLines" ></div>
+                <div data-bind="html: SyncGISPoints" ></div>
+                <div data-bind="html: SyncGISPolygons" ></div>
+                <div data-bind="html: SyncPhotos" ></div>
+                <div data-bind="html: SyncFailPhotos" ></div>-->
+
+                <div>
+                    <div class="ipin-button" type="button" data-role="button" data-bind="click: SyncAll">Download</div>
+                </div>
+            </div>
+        </div>
+        
+            <!--Upload-->
+        <div data-role="view" id="UploadView" 
+             data-title="AMS360 - Upload"
+             data-layout="baseLayout"
+             data-init="app.views.upload.init"
+             data-before-show="app.views.upload.beforeShow"
+             data-show="app.views.upload.show"
+             data-model="app.views.upload.viewModel">
+            <div data-role="header">
+                <div data-role="navbar">
+                    <a data-role="backbutton" data-align="left">Back</a>
+                    <span data-role="view-title">AMS360</span>
+                </div>
+            </div>
+            <div class="view-content">
+                <h2>Upload Data</h2>
+              
+                <ul data-role="listview">
+                    <li >
+                         <div data-bind="html: SyncAssetCapture" ></div>
+                    </li>
+                    <li >
+                         <div data-bind="html: SyncPhotos" ></div>
+                    </li>
+                  
+
+                </ul>
+                <!-- <div data-bind="html: SyncArea" ></div>
+                    
+                <div data-bind="html: SyncAssetCapture" ></div>
+                <div data-bind="html: SyncGISLines" ></div>
+                <div data-bind="html: SyncGISPoints" ></div>
+                <div data-bind="html: SyncGISPolygons" ></div>
+                <div data-bind="html: SyncPhotos" ></div>
+                <div data-bind="html: SyncFailPhotos" ></div>-->
+
+                <div>
+                    <div class="ipin-button" type="button" data-role="button" data-bind="click: SyncAll">Upload</div>
+                </div>
+            </div>
+        </div>
+
+        <!--Error-->
+        <div data-role="modalview" id="error-view" style="display: none; width: 95%; height: 90%;">
+            <div data-role="header">
+                <div data-role="navbar">
+                    <span>Error</span>
+                    <a data-click="app.closeErrorModal" data-role="button" data-align="right">Close</a>
+                </div>
+            </div>
+
+            <div class="message"></div>
+        </div>
+        <!--Layout-->
+        <div data-role="layout" data-id="baseLayout">
+            <div data-role="header">
+                <div data-role="navbar">
+                    <a data-role="backbutton" data-align="left">Back</a>
+                    <span data-role="view-title">AMS360</span>
+                    <a data-role="button" data-align="right">About</a>
+                </div>
+            </div>
             <div data-role="footer">
                 <div data-role="tabstrip">
-                    <a href="#tabstrip-home" data-icon="home">Home</a>
-                    <a href="#tabstrip-login" data-icon="contacts">Login</a>
-                    <a href="#tabstrip-location" data-icon="search">Location</a>
-                    <a href="#tabstrip-weather" data-icon="globe">Weather</a>
+                    <div>AMS360</div>
                 </div>
+
+            </div>
+        </div>
+        <div data-role="layout" data-id="LoginLayout">
+
+            <div data-role="footer">
+                <div data-role="tabstrip">
+                    <div>AMS360</div>
+                </div>
+
             </div>
         </div>
     </body>
 </html>
-        
+

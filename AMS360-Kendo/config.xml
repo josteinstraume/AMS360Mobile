@@ -1,0 +1,4 @@
+<settings>
+  <serviceURL>http://197.242.147.56/mvcdemo/mobileservice.svc</serviceURL> 
+<imageURL>http://197.242.147.56/mvcdemo/imageservice.svc</imageURL>
+</settings>
