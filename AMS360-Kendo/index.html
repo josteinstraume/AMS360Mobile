@@ -9,7 +9,7 @@
         <link href="styles/main.css" rel="stylesheet" />
 
         <script src="cordova.js"></script>
-        <!--  <script type="text/javascript" charset="utf-8" src="Plugins/SQLite/SQLitePlugin.js"></script>-->
+        <script src="scripts/libs/jSignature.min.js"></script>
         <script data-main="scripts/main" src="scripts/libs/require.js"></script>
         <script data-main="scripts/main" src="scripts/libs/base64.js"></script>
 
@@ -66,7 +66,7 @@
              data-model="app.views.main.viewModel">
             <div data-role="header">
                 <div data-role="navbar">
-                    <a onclick="app.close()" data-role="button" data-align="left">Close</a>
+                    <a data-bind="click: ExitApp" data-role="button" data-align="left">Close</a>
                     <span data-role="view-title">AMS360</span>
                 </div>
             </div>
@@ -104,6 +104,520 @@
 
         </div>
 
+        <!--Projects-->
+        <div data-role="view" id="ProjectView" 
+             data-title="AMS360 - Projects"
+             data-layout="baseLayout"
+             data-init="app.views.project.init"
+             data-before-show="app.views.project.beforeShow"
+             data-show="app.views.project.show">
+            <div data-role="header">
+                <div data-role="navbar">
+                    <a data-role="backbutton" data-align="left" href="#GroupingView">Back</a>
+                    <span data-role="view-title">AMS360</span>
+                </div>
+            </div>
+            <h2>Projects</h2>
+            <ul id="project-listview" data-role="listview" data-style="inset"></ul>
+
+        </div>
+
+        <!--Gains and Losses-->
+        <div data-role="view" id="GainsAndLossesView" 
+             data-title="AMS360 - Gains and Losses"
+             data-layout="baseLayout"
+             data-init="app.views.gainsLosses.init"
+             data-before-show="app.views.gainsLosses.beforeShow"
+             data-show="app.views.gainsLosses.show"
+             data-model="app.views.gainsLosses.viewModel"
+             >
+            <div data-role="header">
+                <div data-role="navbar">
+                    <div data-role="button" data-bind="click: navCapture" data-align="left">Back</div>
+                    <span data-role="view-title">AMS360</span>
+                </div>
+            </div>
+            <h2>
+                Gains and Losses for <span data-bind="html: selectedRoom"></span>
+            </h2>
+            <ul data-role="listview" data-style="inset">
+                <li >
+                    <a onclick="app.views.gainsLosses.viewModel.navgains()" >VIEW GAINS</a>
+                </li>
+                <li >
+                    <a onclick="app.views.gainsLosses.viewModel.navlosses()" >VIEW LOSSES</a>
+                </li>
+                <li >
+                    <a onclick="app.views.gainsLosses.viewModel.navlist()" >SIGN OFF INVENTORY LIST</a>
+                </li>
+
+            </ul>
+
+        </div>
+
+        <!--Losses-->
+        <div data-role="view" id="LossesView" 
+             data-title="AMS360 - Losses"
+             data-layout="baseLayout"
+             data-init="app.views.losses.init"
+             data-before-show="app.views.losses.beforeShow"
+             data-show="app.views.losses.show"
+             data-model="app.views.losses.viewModel"
+             >
+            <div data-role="header">
+                <div data-role="navbar">
+                    <div data-role="button" data-bind="click: navGainsLosses" data-align="left">Back</div>
+                    <span data-role="view-title">AMS360</span>
+                </div>
+            </div>
+            <h2>
+                Losses for <span data-bind="html: selectedRoom"></span>
+            </h2>
+            <ul id="LossesListView" data-role="listview" data-bind="source: PopulateLosses"  data-template="my-template-losses" data-header-template="header-template-losses" data-pull-to-refresh="true"></ul>
+
+        </div>
+
+        <script type="text/x-kendo-template" id="my-template-losses">
+            <table data-bind="click:showLoss">
+                <tr>
+                    <td>
+                        <img class="item-photo" src="${URL}" />
+                    </td>
+                    <td>
+                        <div class="item-content">
+                            <h3 class="item-title">#: AssetBarCode #</h3>
+                            <p class="item-info">#: AssetDescription # in #: Condition # condition</p>
+                            #if (Reason === "") {#
+                                <h5>
+                                    <div class="RedCircle"></div>
+                                </h5>
+                            #}else {#
+                                <h5>
+                                    <div class="GreenCircle"></div>
+                                </h5>
+                            # }#
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </script>
+
+        <script type="text/x-kendo-template" id="header-template-losses">
+            Asset Type - #: value #
+        </script>
+
+        <!--Individual Loss-->
+        <div data-role="view" id="SingleLossView" 
+             data-title="AMS360 - Losses"
+             data-layout="baseLayout"
+             data-init="app.views.lossesSingle.init"
+             data-before-show="app.views.lossesSingle.beforeShow"
+             data-show="app.views.lossesSingle.show"
+             data-model="app.views.lossesSingle.viewModel"
+             >
+            <div data-role="header">
+                <div data-role="navbar">
+                    <a data-role="backbutton" data-align="left" href="#LossesView">Back</a>
+                    <span data-role="view-title">AMS360</span>
+                </div>
+            </div>
+            <div class="view-content">
+                <h2>
+                    Loss Asset Information
+                </h2>
+                <div>
+                    <label>
+                        <div>Reason For Loss</div>
+                        <select id="ReasonSelect" data-role="dropdownlist" data-bind="source: reasonList,value: selectedReason" data-text-field="Name" data-value-field="Name">
+                        </select>
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <div>Comment</div>
+                        <input class="ipin-textbox" type="text" data-bind="value: comment" />
+                    </label>
+                </div>
+                <div>
+                    <div type="button" data-role="button" data-bind="click: SubmitLoss">Submit</div>
+                    <div type="button" data-role="button" data-bind="click: FoundIt">Found It!</div>
+                </div>
+                <label>
+                    <div>
+                        Barcode
+                    </div>
+                </label>
+                <div class="ReadonlySpan" data-bind="html: barcode"></div>
+
+                <label>
+                    <div>
+                        Parent Barcode
+                    </div>
+
+                </label>
+                <div class="ReadonlySpan" data-bind="html: parentBarcode"></div>
+
+                <label>
+                    <div>
+                        Old Barcode
+                    </div>
+
+                </label>
+                <div class="ReadonlySpan" data-bind="html: oldBarcode"></div>
+
+                <label>
+                    <div>
+                        Classification
+                    </div>
+
+                </label>
+                <div class="ReadonlySpan" data-bind="html: classification"></div>
+
+                <label>
+                    <div>
+                        Asset Type
+                    </div>
+
+                </label>
+                <div class="ReadonlySpan" data-bind="html: assetType"></div>
+
+                <label>
+                    <div>
+                        Description
+                    </div>
+
+                </label>
+                <div class="ReadonlySpan" data-bind="html: description"></div>
+
+                <label>
+                    <div>
+                        Make
+                    </div>
+
+                </label>
+                <div class="ReadonlySpan" data-bind="html: make"></div>
+
+                <label>
+                    <div>
+                        Model
+                    </div>
+
+                </label>
+                <div class="ReadonlySpan" data-bind="html: model"></div>
+
+                <label>
+                    <div>
+                        Serial Number
+                    </div>
+
+                </label>
+                <div class="ReadonlySpan" data-bind="html: serialNumber"></div>
+
+                <label>
+                    <div>
+                        Custodian
+                    </div>
+
+                </label>
+                <div class="ReadonlySpan" data-bind="html: custodian"></div>
+
+                <label>
+                    <div>
+                        Qty
+                    </div>
+
+                </label>
+                <div class="ReadonlySpan" data-bind="html: qty"></div>
+
+                <label>
+                    <div>
+                        Condition
+                    </div>
+
+                </label>
+                <div class="ReadonlySpan" data-bind="html: condition"></div>
+            </div>
+            <div data-role="fieldcontain" id="GeneralLossSpecFields">
+            </div>
+
+            <div data-role="fieldcontain">
+                <img alt="Photo" style="width: 100%; " id="GeneralLossAssetImage" />
+            </div>
+
+        </div>
+
+        <!--Gains-->
+        <div data-role="view" id="GainsView" 
+             data-title="AMS360 - Gains"
+             data-layout="baseLayout"
+             data-init="app.views.gains.init"
+             data-before-show="app.views.gains.beforeShow"
+             data-show="app.views.gains.show"
+             data-model="app.views.gains.viewModel"
+             >
+            <div data-role="header">
+                <div data-role="navbar">
+                    <div data-role="button" data-bind="click: navGainsLosses" data-align="left">Back</div>
+                    <span data-role="view-title">AMS360</span>
+                </div>
+            </div>
+            <h2>
+                Gains for <span data-bind="html: selectedRoom"></span>
+            </h2>
+            <ul data-role="listview" data-bind="source: PopulateGains"  data-template="my-template-gains" data-header-template="header-template-gains"></ul>
+
+        </div>
+
+        <script type="text/x-kendo-template" id="my-template-gains">
+            <table data-bind="click:showGain">
+                <tr>
+                    <td>
+                        <img class="item-photo" src="${URL}" />
+                    </td>
+                    <td>
+                        <div class="item-content">
+                            <h3 class="item-title">#: AssetBarCode #</h3>
+                            <p class="item-info">#: AssetDescription # in #: Condition # condition</p>
+                            #if (Reason === "") {#
+                                <h5>
+                                    <div class="RedCircle"></div>
+                                </h5>
+                            #}else {#
+                                <h5>
+                                    <div class="GreenCircle"></div>
+                                </h5>
+                            # }#
+                        </div>
+                    </td>
+                </tr>
+            </table>
+            
+            
+           
+        </script>
+
+        <script type="text/x-kendo-template" id="header-template-gains">
+            Asset Type - #: value #
+        </script>
+
+        <!--Individual Gain-->
+        <div data-role="view" id="SingleGainView" 
+             data-title="AMS360 - Gains"
+             data-layout="baseLayout"
+             data-init="app.views.gainsSingle.init"
+             data-before-show="app.views.gainsSingle.beforeShow"
+             data-show="app.views.gainsSingle.show"
+             data-model="app.views.gainsSingle.viewModel"
+             >
+            <div data-role="header">
+                <div data-role="navbar">
+                    <a data-role="backbutton" data-align="left" href="#GainsView">Back</a>
+                    <span data-role="view-title">AMS360</span>
+                </div>
+            </div>
+            <div class="view-content">
+                <h2>
+                    Gain Asset Information
+                </h2>
+                <div>
+                    <label>
+                        <div>Reason For Gain</div>
+                        <select id="ReasonGainSelect" data-role="dropdownlist" data-bind="source: reasonList,value: selectedReason" data-text-field="Name" data-value-field="Name">
+                        </select>
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <div>Comment</div>
+                        <input class="ipin-textbox" type="text" data-bind="value: comment" />
+                    </label>
+                </div>
+                <div>
+                    <div type="button" data-role="button" data-bind="click: SubmitGain">Submit</div>
+                </div>
+                <label>
+                    <div>
+                        Barcode
+                    </div>
+                </label>
+                <div class="ReadonlySpan" data-bind="html: barcode"></div>
+
+                <label>
+                    <div>
+                        Parent Barcode
+                    </div>
+
+                </label>
+                <div class="ReadonlySpan" data-bind="html: parentBarcode"></div>
+
+                <label>
+                    <div>
+                        Old Barcode
+                    </div>
+
+                </label>
+                <div class="ReadonlySpan" data-bind="html: oldBarcode"></div>
+
+                <label>
+                    <div>
+                        Classification
+                    </div>
+
+                </label>
+                <div class="ReadonlySpan" data-bind="html: classification"></div>
+
+                <label>
+                    <div>
+                        Asset Type
+                    </div>
+
+                </label>
+                <div class="ReadonlySpan" data-bind="html: assetType"></div>
+
+                <label>
+                    <div>
+                        Description
+                    </div>
+
+                </label>
+                <div class="ReadonlySpan" data-bind="html: description"></div>
+
+                <label>
+                    <div>
+                        Make
+                    </div>
+
+                </label>
+                <div class="ReadonlySpan" data-bind="html: make"></div>
+
+                <label>
+                    <div>
+                        Model
+                    </div>
+
+                </label>
+                <div class="ReadonlySpan" data-bind="html: model"></div>
+
+                <label>
+                    <div>
+                        Serial Number
+                    </div>
+
+                </label>
+                <div class="ReadonlySpan" data-bind="html: serialNumber"></div>
+
+                <label>
+                    <div>
+                        Custodian
+                    </div>
+
+                </label>
+                <div class="ReadonlySpan" data-bind="html: custodian"></div>
+
+                <label>
+                    <div>
+                        Qty
+                    </div>
+
+                </label>
+                <div class="ReadonlySpan" data-bind="html: qty"></div>
+
+                <label>
+                    <div>
+                        Condition
+                    </div>
+
+                </label>
+                <div class="ReadonlySpan" data-bind="html: condition"></div>
+            </div>
+            <div data-role="fieldcontain" id="GeneralGainSpecFields">
+            </div>
+
+            <div data-role="fieldcontain">
+                <img alt="Photo" style="width: 100%;" id="GeneralGainAssetImage" />
+            </div>
+
+        </div>
+
+        <!--InventoryList-->
+        <div data-role="view" id="InventoryView" 
+             data-title="AMS360 - InventoryList"
+             data-layout="baseLayout"
+             data-init="app.views.inventory.init"
+             data-before-show="app.views.inventory.beforeShow"
+             data-show="app.views.inventory.show"
+             data-model="app.views.inventory.viewModel"
+             >
+            <div data-role="header">
+                <div data-role="navbar">
+                    <a data-role="backbutton" data-align="left" href="#GeneralView">Back</a>
+                    <span data-role="view-title">AMS360</span>
+                </div>
+            </div>
+            <h2>
+                Inventory List for <span data-bind="html: selectedRoom"></span>
+            </h2>
+            <ul data-role="listview" data-bind="source: PopulateList"  data-template="my-template" data-header-template="header-template"></ul>
+            <div type="button" data-role="button" data-bind="click: SignOff">Sign Off</div>
+
+        </div>
+
+        <script type="text/x-kendo-template" id="my-template">
+            <table>
+                <tr>
+                    <td>
+                        <img class="item-photo" src="${URL}" />
+                    </td>
+                    <td>
+                        <div class="item-content">
+                            <h3 class="item-title">#: AssetBarCode #</h3>
+                            <p class="item-info">#: AssetDescription # in #: Condition # condition</p>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+            
+            
+           
+        </script>
+
+        <script type="text/x-kendo-template" id="header-template">
+            Asset Type - #: value #
+        </script>
+
+        <!--InventoryList Sign Off-->
+        <div data-role="view" id="SignOffView" 
+             data-title="AMS360 - InventoryList"
+             data-layout="baseLayout"
+             data-init="app.views.signOff.init"
+             data-before-show="app.views.signOff.beforeShow"
+             data-show="app.views.signOff.show"
+             data-model="app.views.signOff.viewModel"
+             >
+            <div data-role="header">
+                <div data-role="navbar">
+                    <a data-role="backbutton" data-align="left" href="#InventoryView">Back</a>
+                    <span data-role="view-title">AMS360</span>
+                </div>
+            </div>
+            <h2>
+                Sign Off for <span data-bind="html: selectedRoom"></span>
+            </h2>
+
+            <div style="height:150px;" id="signature"></div>
+            <p>
+                <span data-bind="html: custodian"></span> - Sign on the line
+            </p>
+            <div>
+                <div type="button" data-role="button" data-bind="click: ChangeCustodian">Change Custodian (Coming Soon)</div>
+            </div>
+            <div>
+                <div type="button" data-role="button" data-bind="click: Reset">Reset Signature</div>
+                <div type="button" data-role="button" data-bind="click: Submit">Submit</div>
+            </div>
+
+        </div>
+
         <!--Location Page-->
         <div data-role="view" id="LocationView" 
              data-title="AMS360 - Location"
@@ -114,7 +628,7 @@
              data-show="app.views.location.show">
             <div data-role="header">
                 <div data-role="navbar">
-                    <a data-role="backbutton" data-align="left" href="#GroupingView">Back</a>
+                    <a data-role="backbutton" data-align="left" href="#ProjectView">Back</a>
                     <span data-role="view-title">AMS360</span>
                 </div>
             </div>
@@ -190,7 +704,7 @@
         </div>
 
         <!--Capture General Page-->
-        <div data-role="view" id="GeneralView" 
+        <div data-role="view" id="GeneralView" data-use-native-scrolling="true"
              data-title=""
              data-layout="baseLayout"
              data-init="app.views.general.init"
@@ -198,7 +712,7 @@
              data-show="app.views.general.show">
             <div data-role="header">
                 <div data-role="navbar">
-                    <a data-role="backbutton" data-align="left" href="#LocationView">Back</a>
+                    <a data-role="button" data-align="left" data-bind="click: exitroom">Exit Room</a>
 
                     <ul data-index="0" data-role="buttongroup">
 
@@ -210,7 +724,9 @@
                 </div>
             </div>
             <div class="view-content">
-                <h2>General Assets in <span data-bind="html: selectedRoom"></span></h2>
+                <h2>
+                    General Assets in <span data-bind="html: selectedRoom"></span>
+                </h2>
                 <div>
                     <label>
                         <div>Barcoded</div>
@@ -231,7 +747,7 @@
                 <div>
                     <label>
                         <div>Parent Barcode</div>
-                        <input id="ParentBarcodeTextbox" style='display: inline-block; width:78%;' class="ipin-textbox" type="text" data-bind="value: parentBarcode" />
+                        <input id="ParentBarcodeTextbox" style='display: inline-block; width:75%;' class="ipin-textbox" type="text" data-bind="value: parentBarcode" />
                         <div style='display: inline-block;'>
                             <div type="button" data-role="button" data-bind="click: _scanParent">scan</div>
                         </div>
@@ -240,7 +756,7 @@
                 <div>
                     <label>
                         <div>Old Barcode</div>
-                        <input class="ipin-textbox" type="text" data-bind="value: oldBarcode" />
+                        <input id="OldBarcodeTextBox" class="ipin-textbox" type="text" data-bind="value: oldBarcode" />
                     </label>
                 </div>
                 <div data-role="fieldcontain">
@@ -249,7 +765,7 @@
                             Classification
                         </label>
                     </div>
-                    <div style='display: inline-block; width:85%;'>
+                    <div style='display: inline-block; width:80%;'>
                         <input class="ipin-textbox" type="text" data-bind="value: classificationText" disabled="disabled" />
                         <input type="hidden" data-bind="value: classificationID"/>
                     </div>
@@ -264,7 +780,7 @@
                             AssetType
                         </label>
                     </div>
-                    <div style='display: inline-block; width:85%;'>
+                    <div style='display: inline-block; width:80%;'>
                         <input class="ipin-textbox" type="text" data-bind="value: assetTypeText" disabled="disabled" value="" />
                         <input type="hidden" data-bind="value: assetTypeID"/>
                     </div>
@@ -293,7 +809,7 @@
                 <div>
                     <label>
                         <div>Serial Number</div>
-                        <input id="SerialNumberTextbox" style='display: inline-block; width:78%;' class="ipin-textbox" type="text" data-bind="value: serialNumber" />
+                        <input id="SerialNumberTextbox" style='display: inline-block; width:75%;' class="ipin-textbox" type="text" data-bind="value: serialNumber" />
                         <div style='display: inline-block;'>
                             <div type="button" data-role="button" data-bind="click: _scanSerial">scan</div>
                         </div>
@@ -304,6 +820,7 @@
                         <div>Custodian</div>
                         <select id="CustodianSelect" data-role="dropdownlist" data-bind="source: custodianList,value: selectedCustodian" data-text-field="Name" data-value-field="Username">
                         </select>
+
                     </label>
                 </div>
                 <div class="BarcodeInVisible">
@@ -315,8 +832,11 @@
                 <div>
                     <label>
                         <div>Condition</div>
-                        <select id="ConditionSelect" data-role="dropdownlist" data-bind="source: conditionList,value: selectedCondition" data-text-field="Name" data-value-field="Name">
+                        <select id="ConditionSelect" style='display: inline-block; width:75%;' data-role="dropdownlist" data-bind="source: conditionList,value: selectedCondition" data-text-field="Name" data-value-field="Name">
                         </select>
+                        <div style='display: inline-block;'>
+                            <div type="button" data-role="button" data-bind="click: DoCondition">...</div>
+                        </div>
                     </label>
                 </div>
                 <div data-role="fieldcontain" id="GeneralSpecFields">
@@ -326,7 +846,7 @@
 
                 </div>
                 <div data-role="fieldcontain">
-                    <img alt="Photo" style="width: 100%; height: 400px;" id="GeneralAssetImage" />
+                    <img alt="Photo" style="width: 100%; " id="GeneralAssetImage" />
                 </div>
             </div>
         </div>
@@ -504,7 +1024,7 @@
                     <h3>
                         Select a Classification
                     </h3>
-                    <a data-role="backbutton" data-align="left">Back</a>
+                    <div data-role="button" data-bind="click: navCapture" data-align="left">Back</div>
                 </div>
             </div>
             <div style="margin:10px;">
@@ -529,6 +1049,32 @@
             </div>
 
         </div>
+        <!--Condition Assesment Page-->
+        <div id="ConditionAssesmentPage" data-role="view" data-init="app.views.general.init"
+             data-before-show="app.views.general.beforeShow"
+             data-model="app.views.general.viewModel"
+             data-show="app.views.general.show"
+             data-layout="baseLayout">
+            <div data-role="header" >
+                <div data-role="navbar">
+                    <h3>
+                        Condition Assessment
+                    </h3>
+                    <div data-role="button" data-bind="click: navCapture" data-align="left">Back</div>
+                </div>
+            </div>
+            <div class="view-content">
+                <h2> Condition Assessment</h2>
+                <div>
+
+                    <div id="condition-select" ></div>
+
+                    <div type="button" data-role="button" data-bind="click: submitCondition">Submit</div>
+                
+                </div>
+            </div>
+
+        </div>
         <!--AssetType SelectionPage-->
         <div id="AssetTypeSelectionPage" data-role="view" data-init="app.views.general.init"
              data-before-show="app.views.general.beforeShow"
@@ -539,7 +1085,7 @@
                     <h3>
                         Select an Asset Type
                     </h3>
-                    <a data-role="backbutton" data-align="left">Back</a>
+                    <div data-role="button" data-bind="click: navCapture" data-align="left">Back</div>
                 </div>
             </div>
             <div style="margin:10px;">
@@ -613,7 +1159,28 @@
 
             </div>
         </div>
+        <!--SyncProjectSelection-->
+        <div id="SyncProjectPage" data-role="modalview" style="display: none; width: 95%; height: 90%;">
+            <div data-role="header" >
+                <div data-role="tabstrip">
+                    <h3>
+                        Select Project For Assets
+                    </h3>
 
+                </div>
+            </div>
+            <div class="view-content">
+                <div id="SpecSelectionList">
+                    <ul id="ProjectSyncList" data-role="listview" data-style="inset"></ul>
+                </div>
+            </div>
+            <div data-role="footer">
+                <div data-role="navbar">
+                    <a data-click="app.closeSpecModal" data-role="button" data-align="right">Close</a>
+                </div>
+
+            </div>
+        </div>
         <!--Sync-->
         <div data-role="view" id="SyncView" 
              data-title="AMS360 - SYNC"
@@ -646,7 +1213,19 @@
                         <div data-bind="html: SyncBuilding" ></div>
                     </li>
                     <li >
+                        <div data-bind="html: SyncProject" ></div>
+                    </li>
+                    <li >
                         <div data-bind="html: SyncSite" ></div>
+                    </li>
+                    <li >
+                        <div data-bind="html: SyncConditionHeader" ></div>
+                    </li>
+                    <li >
+                        <div data-bind="html: SyncConditionGroup" ></div>
+                    </li>
+                    <li >
+                        <div data-bind="html: SyncConditionCriteria" ></div>
                     </li>
                     <li >
                         <div data-bind="html: SyncClassification" ></div>
@@ -666,13 +1245,14 @@
                     <li >
                         <div data-bind="html: SyncSpecValue" ></div>
                     </li>
+
                     <li >
                         <div data-bind="html: SyncAsset" ></div>
                     </li>
 
                 </ul>
                 <!-- <div data-bind="html: SyncArea" ></div>
-                    
+                
                 <div data-bind="html: SyncAssetCapture" ></div>
                 <div data-bind="html: SyncGISLines" ></div>
                 <div data-bind="html: SyncGISPoints" ></div>
@@ -685,8 +1265,8 @@
                 </div>
             </div>
         </div>
-        
-            <!--Upload-->
+
+        <!--Upload-->
         <div data-role="view" id="UploadView" 
              data-title="AMS360 - Upload"
              data-layout="baseLayout"
@@ -702,19 +1282,18 @@
             </div>
             <div class="view-content">
                 <h2>Upload Data</h2>
-              
+
                 <ul data-role="listview">
                     <li >
-                         <div data-bind="html: SyncAssetCapture" ></div>
+                        <div data-bind="html: SyncAssetCapture" ></div>
                     </li>
                     <li >
-                         <div data-bind="html: SyncPhotos" ></div>
+                        <div data-bind="html: SyncPhotos" ></div>
                     </li>
-                  
 
                 </ul>
                 <!-- <div data-bind="html: SyncArea" ></div>
-                    
+                
                 <div data-bind="html: SyncAssetCapture" ></div>
                 <div data-bind="html: SyncGISLines" ></div>
                 <div data-bind="html: SyncGISPoints" ></div>
@@ -727,7 +1306,6 @@
                 </div>
             </div>
         </div>
-
         <!--Error-->
         <div data-role="modalview" id="error-view" style="display: none; width: 95%; height: 90%;">
             <div data-role="header">

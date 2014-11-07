@@ -28,7 +28,8 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                                          console.log(Specresult.rows.length);
                                                                          if (Specresult.rows.length > 0) {
                                                                              for (var j = 0; j < Specresult.rows.length; j++) {
-                                                                                 SpecList.push({ID: 0, Description: Specresult.rows.item(j).Description, SpecValue: Specresult.rows.item(j).SpecValue, SpecID: Specresult.rows.item(j).SpecID, SpecValueID: Specresult.rows.item(j).SpecValueID, AssetCode: Specresult.rows.item(j).AssetCode, IsCompulsory: 1});
+                                                                                 debugger;
+                                                                                 SpecList.push({ID: 0, Description: Specresult.rows.item(j).Description, SpecValue: Specresult.rows.item(j).SpecValue, SpecID: Specresult.rows.item(j).SpecID, SpecValueID: Specresult.rows.item(j).SpecValueID, AssetCode: Specresult.rows.item(j).AssetCode, IsCompulsory: Specresult.rows.item(j).IsCompulsory, ProjectID: Specresult.rows.item(j).ProjectID});
                                                                              }
                                                                          }
                                       									debugger;
@@ -50,6 +51,7 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                                              		RoomCode: result.rows.item(i).RoomCode,
                                                                              		SerialNumber: result.rows.item(i).SerialNumber,
                                                                              		Username: result.rows.item(i).Username,
+                                                                                     ProjectID: result.rows.item(i).ProjectID,
                                                                                      Specs: SpecList
                                                                                  });
                                         
@@ -62,8 +64,8 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                                                         contentType: "application/json; charset=utf-8",
                                                                                         beforeSend: function (xhr) {
                                                                                             viewModel.set("SyncAssetCapture", "Uploading assets...");
-                                                                                            xhr.setRequestHeader('Authorization', 'Basic ' + btoa("hannes:Hans@0507"));  
-                                                                                            xhr.setRequestHeader('X-Auth-Token', "MvcAMS360"); 
+                                                                                            xhr.setRequestHeader('Authorization', 'Basic ' + btoa(account.userName + ":" + account.password));  
+                                                                                            xhr.setRequestHeader('X-Auth-Token', account.database); 
                                                                                         },
                                                                                         complete: function (xhr) {
                                                                                             utils.hideLoading();
@@ -77,7 +79,7 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                                                             }
                                                                                             else {
                                                                                                 viewModel.set("SyncAssetCapture", "Failed to send Assets");
-                                                                                                viewModel.set("SyncPhotos", "The assets failed. Not Photos were synced");
+                                                                                                viewModel.set("SyncPhotos", "The assets failed. No Photos were synced");
                                                                                             }
                                                                                         },
                                                                                         error: function (res) {
@@ -98,7 +100,7 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                                  }
                                                              })(i)
                            
-                                                             data.GetSpecCapture(callback2, result.rows.item(i).AssetBarCode);
+                                                             data.GetSpecCapture(callback2, result.rows.item(i).AssetBarCode, result.rows.item(i).ProjectID);
                                                          }
                                                      }
                                                  }
@@ -122,7 +124,7 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
 															debugger;
                                                              options.fileKey = Photoresult.rows.item(i).AssetBarCode; 
 
-                                                             var imagefilename = Photoresult.rows.item(i).AssetBarCode; 
+                                                             var imagefilename = Photoresult.rows.item(i).AssetBarCode + " " + Photoresult.rows.item(i).ProjectID; 
 
                                                              options.fileName = imagefilename;
                                                              options.mimeType = "image/jpeg"; 

@@ -89,6 +89,10 @@ define(["kendo", "app/account","app/data", "app/utils"], function (kendo, accoun
     return {
         init: function (initEvt) {
             // ... init event code ...
+              while (viewModel.siteList.length > 0) {
+                viewModel.siteList.pop();
+            }
+            viewModel.GetSites();
         },
  
         beforeShow: function (beforeShowEvt) {
@@ -97,10 +101,7 @@ define(["kendo", "app/account","app/data", "app/utils"], function (kendo, accoun
  
         show: function (showEvt) {
             // ... show event code ...
-            while (viewModel.siteList.length > 0) {
-                viewModel.siteList.pop();
-            }
-            viewModel.GetSites();
+          
         },
         viewModel: viewModel
         

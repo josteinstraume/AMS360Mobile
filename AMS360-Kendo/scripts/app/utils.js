@@ -4,6 +4,10 @@ define([], function () {
     return {
         grouping: "",
         area: "",
+        project: "",
+        room: "",
+        lastScanField: "",
+        selectedBarcode: "",
         mFeatureLine: null,
         mFeaturePoint: null,
         mFeaturePolygon: null,

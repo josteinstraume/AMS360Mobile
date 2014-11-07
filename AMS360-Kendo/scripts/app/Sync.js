@@ -9,9 +9,13 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                          SyncAssetType: "Asset Types",
                                          SyncRoom: "Rooms",
                                          SyncBuilding: "Buildings",
+                                         SyncProject: "Projects",
                                          SyncSite: "Sites",
                                          SyncArea: "Area",
                                          SyncUser: "Users",
+                                         SyncConditionHeader: "Condition Assesment Setup",
+                                         SyncConditionGroup: "Condition Assesment Group",
+                                         SyncConditionCriteria: "Condition Assesment Criteria",
                                          SyncAssetCapture: "Assets",
                                          SyncGISLines: "Ready to sync GIS Lines",
                                          SyncGISPoints: "Ready to sync GIS Points",
@@ -33,8 +37,8 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                         type: "GET",
                                                         beforeSend: function (xhr) {
                                                             viewModel.set("SyncUser", "Downloading users...");
-                                                            xhr.setRequestHeader('Authorization', 'Basic ' + btoa("hannes:Hans@0507"));  
-                                                            xhr.setRequestHeader('X-Auth-Token', "MvcAMS360"); 
+                                                            xhr.setRequestHeader('Authorization', 'Basic ' + btoa(account.userName + ":" + account.password));  
+                                                            xhr.setRequestHeader('X-Auth-Token', account.database); 
                                                         },
                                                         complete: function (xhr) {
                                                             viewModel.GetRooms();
@@ -42,8 +46,7 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                         error: function (xhr, ajaxOptions, thrownError) {
                                                             if (xhr.status == "403" || xhr.status == "401") {
                                                                 viewModel.set("SyncUser", "You are not authorised to fetch users");
-                                                            }
-                                                            else {
+                                                            } else {
                                                                 viewModel.set("SyncUser", "Failed to download users");
                                                             }
                                                         },
@@ -52,8 +55,7 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                                 var result = model.GetUsersResult;
                                                                 data.InsertUsers(result);
                                                                 viewModel.set("SyncUser", "Successful: Users");
-                                                            }
-                                                            catch (e) {
+                                                            } catch (e) {
                                                                 viewModel.set("SyncUser", "Failed to downloaded users: " + e);
                                                             }
                                                         }
@@ -67,8 +69,8 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                         type: "GET",
                                                         beforeSend: function (xhr) {
                                                             viewModel.set("SyncRoom", "Downloading rooms...");
-                                                            xhr.setRequestHeader('Authorization', 'Basic ' + btoa("hannes:Hans@0507"));  
-                                                            xhr.setRequestHeader('X-Auth-Token', "MvcAMS360"); 
+                                                            xhr.setRequestHeader('Authorization', 'Basic ' + btoa(account.userName + ":" + account.password));  
+                                                            xhr.setRequestHeader('X-Auth-Token', account.database); 
                                                         },
                                                         complete: function (xhr) {
                                                             viewModel.GetBuildings();
@@ -76,18 +78,17 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                         error: function (xhr, ajaxOptions, thrownError) {
                                                             if (xhr.status == "403" || xhr.status == "401") {
                                                                 viewModel.set("SyncRoom", "You are not authorised to fetch rooms");
-                                                            }
-                                                            else {
+                                                            } else {
                                                                 viewModel.set("SyncRoom", "Failed to download rooms");
                                                             }
                                                         },
                                                         success: function (model) {
                                                             try {
+                                                                debugger;
                                                                 var result = model.GetRoomsResult;
                                                                 data.InsertRooms(result);
                                                                 viewModel.set("SyncRoom", "Successful: Rooms");
-                                                            }
-                                                            catch (e) {
+                                                            } catch (e) {
                                                                 viewModel.set("SyncRoom", "Failed to downloaded rooms: " + e);
                                                             }
                                                         }
@@ -101,17 +102,16 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                         type: "GET",
                                                         beforeSend: function (xhr) {
                                                             viewModel.set("SyncBuilding", "Downloading buildings...");
-                                                            xhr.setRequestHeader('Authorization', 'Basic ' + btoa("hannes:Hans@0507"));  
-                                                            xhr.setRequestHeader('X-Auth-Token', "MvcAMS360"); 
+                                                            xhr.setRequestHeader('Authorization', 'Basic ' + btoa(account.userName + ":" + account.password));  
+                                                            xhr.setRequestHeader('X-Auth-Token', account.database); 
                                                         },
                                                         complete: function (xhr) {
-                                                            viewModel.GetSites();
+                                                            viewModel.GetProjects();
                                                         },
                                                         error: function (xhr, ajaxOptions, thrownError) {
                                                             if (xhr.status == "403" || xhr.status == "401") {
                                                                 viewModel.set("SyncBuilding", "You are not authorised to fetch buildings");
-                                                            }
-                                                            else {
+                                                            } else {
                                                                 viewModel.set("SyncBuilding", "Failed to download buildings");
                                                             }
                                                         },
@@ -121,9 +121,40 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                               
                                                                 data.InsertBuildings(result);
                                                                 viewModel.set("SyncBuilding", "Successful: Buildings");
-                                                            }
-                                                            catch (e) {
+                                                            } catch (e) {
                                                                 viewModel.set("SyncBuilding", "Failed to downloaded buildings: " + e);
+                                                            }
+                                                        }
+                                                    });
+                                         },
+                                         GetProjects: function() {
+                                             var URL = utils.ServiceURL + "/GetProjects";
+                                             $.ajax({
+                                                        url: URL,
+                                                        dataType: 'json',
+                                                        type: "GET",
+                                                        beforeSend: function (xhr) {
+                                                            viewModel.set("SyncProject", "Downloading projects...");
+                                                            xhr.setRequestHeader('Authorization', 'Basic ' + btoa(account.userName + ":" + account.password));  
+                                                            xhr.setRequestHeader('X-Auth-Token', account.database); 
+                                                        },
+                                                        complete: function (xhr) {
+                                                            viewModel.GetSites(); 
+                                                        },
+                                                        error: function (xhr, ajaxOptions, thrownError) {
+                                                            if (xhr.status == "403" || xhr.status == "401") {
+                                                                viewModel.set("SyncProject", "You are not authorised to fetch projects");
+                                                            } else {
+                                                                viewModel.set("SyncProject", "Failed to download sites");
+                                                            }
+                                                        },
+                                                        success: function (model) {
+                                                            try {
+                                                                var result = model.GetProjectsResult;
+                                                                data.InsertProjects(result);
+                                                                viewModel.set("SyncProject", "Successful: Projects");
+                                                            } catch (e) {
+                                                                viewModel.set("SyncProject", "Failed to downloaded projects: " + e);
                                                             }
                                                         }
                                                     });
@@ -136,17 +167,16 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                         type: "GET",
                                                         beforeSend: function (xhr) {
                                                             viewModel.set("SyncSite", "Downloading sites...");
-                                                            xhr.setRequestHeader('Authorization', 'Basic ' + btoa("hannes:Hans@0507"));  
-                                                            xhr.setRequestHeader('X-Auth-Token', "MvcAMS360"); 
+                                                            xhr.setRequestHeader('Authorization', 'Basic ' + btoa(account.userName + ":" + account.password));  
+                                                            xhr.setRequestHeader('X-Auth-Token', account.database); 
                                                         },
                                                         complete: function (xhr) {
-                                                            viewModel.GetHierarchies(); 
+                                                            viewModel.GetConditionHeader(); 
                                                         },
                                                         error: function (xhr, ajaxOptions, thrownError) {
                                                             if (xhr.status == "403" || xhr.status == "401") {
                                                                 viewModel.set("SyncSite", "You are not authorised to fetch sites");
-                                                            }
-                                                            else {
+                                                            } else {
                                                                 viewModel.set("SyncSite", "Failed to download sites");
                                                             }
                                                         },
@@ -155,9 +185,104 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                                 var result = model.GetSitesResult;
                                                                 data.InsertSites(result);
                                                                 viewModel.set("SyncSite", "Successful: Sites");
-                                                            }
-                                                            catch (e) {
+                                                            } catch (e) {
                                                                 viewModel.set("SyncSite", "Failed to downloaded sites: " + e);
+                                                            }
+                                                        }
+                                                    });
+                                         },
+                                         GetConditionHeader: function() {
+                                             var URL = utils.ServiceURL + "/GetConHeaders";
+                                             $.ajax({
+                                                        url: URL,
+                                                        dataType: 'json',
+                                                        type: "GET",
+                                                        beforeSend: function (xhr) {
+                                                            viewModel.set("SyncConditionHeader", "Downloading assessment...");
+                                                            xhr.setRequestHeader('Authorization', 'Basic ' + btoa(account.userName + ":" + account.password));  
+                                                            xhr.setRequestHeader('X-Auth-Token', account.database); 
+                                                        },
+                                                        complete: function (xhr) {
+                                                            viewModel.GetConditionGroup(); 
+                                                        },
+                                                        error: function (xhr, ajaxOptions, thrownError) {
+                                                            if (xhr.status == "403" || xhr.status == "401") {
+                                                                viewModel.set("SyncConditionHeader", "You are not authorised to fetch condition assessments");
+                                                            } else {
+                                                                viewModel.set("SyncConditionHeader", "Failed to download conditions");
+                                                            }
+                                                        },
+                                                        success: function (model) {
+                                                            try {
+                                                                var result = model.GetConHeadersResult;
+                                                                data.InsertConHeaders(result);
+                                                                viewModel.set("SyncConditionHeader", "Successful: Condition Assesment");
+                                                            } catch (e) {
+                                                                viewModel.set("SyncConditionHeader", "Failed to downloaded condition assessment: " + e);
+                                                            }
+                                                        }
+                                                    });
+                                         },
+                                         GetConditionGroup: function() {
+                                             var URL = utils.ServiceURL + "/GetConGroups";
+                                             $.ajax({
+                                                        url: URL,
+                                                        dataType: 'json',
+                                                        type: "GET",
+                                                        beforeSend: function (xhr) {
+                                                            viewModel.set("SyncConditionGroup", "Downloading condition groups...");
+                                                            xhr.setRequestHeader('Authorization', 'Basic ' + btoa(account.userName + ":" + account.password));  
+                                                            xhr.setRequestHeader('X-Auth-Token', account.database); 
+                                                        },
+                                                        complete: function (xhr) {
+                                                            viewModel.GetConditionCriteria(); 
+                                                        },
+                                                        error: function (xhr, ajaxOptions, thrownError) {
+                                                            if (xhr.status == "403" || xhr.status == "401") {
+                                                                viewModel.set("SyncConditionGroup", "You are not authorised to fetch condition groups");
+                                                            } else {
+                                                                viewModel.set("SyncConditionGroup", "Failed to download condition groups");
+                                                            }
+                                                        },
+                                                        success: function (model) {
+                                                            try {
+                                                                var result = model.GetConGroupsResult;
+                                                                data.InsertConGroups(result);
+                                                                viewModel.set("SyncConditionGroup", "Successful: Condition Groups");
+                                                            } catch (e) {
+                                                                viewModel.set("SyncConditionGroup", "Failed to downloaded condition groups: " + e);
+                                                            }
+                                                        }
+                                                    });
+                                         },
+                                         GetConditionCriteria: function() {
+                                             var URL = utils.ServiceURL + "/GetConCriterias";
+                                             $.ajax({
+                                                        url: URL,
+                                                        dataType: 'json',
+                                                        type: "GET",
+                                                        beforeSend: function (xhr) {
+                                                            viewModel.set("SyncConditionCriteria", "Downloading condition criteria...");
+                                                            xhr.setRequestHeader('Authorization', 'Basic ' + btoa(account.userName + ":" + account.password));  
+                                                            xhr.setRequestHeader('X-Auth-Token', account.database); 
+                                                        },
+                                                        complete: function (xhr) {
+                                                            viewModel.GetHierarchies(); 
+                                                        },
+                                                        error: function (xhr, ajaxOptions, thrownError) {
+                                                            if (xhr.status == "403" || xhr.status == "401") {
+                                                                viewModel.set("SyncConditionCriteria", "You are not authorised to fetch condition criteria");
+                                                            } else {
+                                                                viewModel.set("SyncConditionCriteria", "Failed to download condition criteria");
+                                                            }
+                                                        },
+                                                        success: function (model) {
+                                                            try {
+                                                                var result = model.GetConCriteriasResult;
+                                                                data.InsertConCriterias(result);
+                                                                viewModel.set("SyncConditionCriteria", "Successful: Condition Criteria");
+                                                            } catch (e) {
+                                                                viewModel.set("SyncConditionCriteria", "Failed to downloaded condition criteria: " + e);
                                                             }
                                                         }
                                                     });
@@ -170,8 +295,8 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                         type: "GET",
                                                         beforeSend: function (xhr) {
                                                             viewModel.set("SyncClassification", "Downloading classifications...");
-                                                            xhr.setRequestHeader('Authorization', 'Basic ' + btoa("hannes:Hans@0507"));  
-                                                            xhr.setRequestHeader('X-Auth-Token', "MvcAMS360"); 
+                                                            xhr.setRequestHeader('Authorization', 'Basic ' + btoa(account.userName + ":" + account.password));  
+                                                            xhr.setRequestHeader('X-Auth-Token', account.database); 
                                                         },
                                                         complete: function (xhr) {
                                                             viewModel.GetAssetTypes();
@@ -179,8 +304,7 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                         error: function (xhr, ajaxOptions, thrownError) {
                                                             if (xhr.status == "403" || xhr.status == "401") {
                                                                 viewModel.set("SyncClassification", "You are not authorised to fetch classifications");
-                                                            }
-                                                            else {
+                                                            } else {
                                                                 viewModel.set("SyncClassification", "Failed to download classifications");
                                                             }
                                                         },
@@ -189,8 +313,7 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                                 var result = model.GetHierarchiesResult;
                                                                 data.InsertHierarchies(result);
                                                                 viewModel.set("SyncClassification", "Successful: Classifications");
-                                                            }
-                                                            catch (e) {
+                                                            } catch (e) {
                                                                 viewModel.set("SyncClassification", "Failed to downloaded classifications: " + e);
                                                             }
                                                         }
@@ -204,8 +327,8 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                         type: "GET",
                                                         beforeSend: function (xhr) {
                                                             viewModel.set("SyncAssetType", "Downloading asset types...");
-                                                            xhr.setRequestHeader('Authorization', 'Basic ' + btoa("hannes:Hans@0507"));  
-                                                            xhr.setRequestHeader('X-Auth-Token', "MvcAMS360"); 
+                                                            xhr.setRequestHeader('Authorization', 'Basic ' + btoa(account.userName + ":" + account.password));  
+                                                            xhr.setRequestHeader('X-Auth-Token', account.database); 
                                                         },
                                                         complete: function (xhr) {
                                                             viewModel.GetAssetTypeSpecLink();
@@ -213,8 +336,7 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                         error: function (xhr, ajaxOptions, thrownError) {
                                                             if (xhr.status == "403" || xhr.status == "401") {
                                                                 viewModel.set("SyncAssetType", "You are not authorised to fetch asset types");
-                                                            }
-                                                            else {
+                                                            } else {
                                                                 viewModel.set("SyncAssetType", "Failed to download asset types");
                                                             }
                                                         },
@@ -223,8 +345,7 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                                 var result = model.GetAssetTypesResult;
                                                                 data.InserAssetTypes(result);
                                                                 viewModel.set("SyncAssetType", "Successful: Asset types");
-                                                            }
-                                                            catch (e) {
+                                                            } catch (e) {
                                                                 viewModel.set("SyncAssetType", "Failed to downloaded asset types: " + e);
                                                             }
                                                         }
@@ -238,8 +359,8 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                         type: "GET",
                                                         beforeSend: function (xhr) {
                                                             viewModel.set("SyncAssetTypeSpecLink", "Downloading spec links...");
-                                                            xhr.setRequestHeader('Authorization', 'Basic ' + btoa("hannes:Hans@0507"));  
-                                                            xhr.setRequestHeader('X-Auth-Token', "MvcAMS360"); 
+                                                            xhr.setRequestHeader('Authorization', 'Basic ' + btoa(account.userName + ":" + account.password));  
+                                                            xhr.setRequestHeader('X-Auth-Token', account.database); 
                                                         },
                                                         complete: function (xhr) {
                                                             viewModel.GetAssetTypeSpecValues();
@@ -247,8 +368,7 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                         error: function (xhr, ajaxOptions, thrownError) {
                                                             if (xhr.status == "403" || xhr.status == "401") {
                                                                 viewModel.set("SyncAssetTypeSpecLink", "You are not authorised to fetch spec links");
-                                                            }
-                                                            else {
+                                                            } else {
                                                                 viewModel.set("SyncAssetTypeSpecLink", "Failed to download spec links");
                                                             }
                                                         },
@@ -257,8 +377,7 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                                 var result = model.GetAssetTypeSpecLinkResult;
                                                                 data.InsertAssetTypeLink(result);
                                                                 viewModel.set("SyncAssetTypeSpecLink", "Successful: Spec links");
-                                                            }
-                                                            catch (e) {
+                                                            } catch (e) {
                                                                 viewModel.set("SyncAssetTypeSpecLink", "Failed to downloaded spec links: " + e);
                                                             }
                                                         }
@@ -272,8 +391,8 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                         type: "GET",
                                                         beforeSend: function (xhr) {
                                                             viewModel.set("SyncAssetTypeSpecValue", "Downloading spec values...");
-                                                            xhr.setRequestHeader('Authorization', 'Basic ' + btoa("hannes:Hans@0507"));  
-                                                            xhr.setRequestHeader('X-Auth-Token', "MvcAMS360"); 
+                                                            xhr.setRequestHeader('Authorization', 'Basic ' + btoa(account.userName + ":" + account.password));  
+                                                            xhr.setRequestHeader('X-Auth-Token', account.database); 
                                                         },
                                                         complete: function (xhr) {
                                                             viewModel.GetAssetTypeSpecs();
@@ -281,8 +400,7 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                         error: function (xhr, ajaxOptions, thrownError) {
                                                             if (xhr.status == "403" || xhr.status == "401") {
                                                                 viewModel.set("SyncAssetTypeSpecValue", "You are not authorised to fetch spec values");
-                                                            }
-                                                            else {
+                                                            } else {
                                                                 viewModel.set("SyncAssetTypeSpecValue", "Failed to download spec values");
                                                             }
                                                         },
@@ -291,8 +409,7 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                                 var result = model.GetAssetTypeSpecValueResult;
                                                                 data.InsertAscSpecValue(result);
                                                                 viewModel.set("SyncAssetTypeSpecValue", "Successful: Spec values");
-                                                            }
-                                                            catch (e) {
+                                                            } catch (e) {
                                                                 viewModel.set("SyncAssetTypeSpecValue", "Failed to downloaded spec values: " + e);
                                                             }
                                                         }
@@ -307,8 +424,8 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                         type: "GET",
                                                         beforeSend: function (xhr) {
                                                             viewModel.set("SyncAssetTypeSpec", "Downloading specs...");
-                                                            xhr.setRequestHeader('Authorization', 'Basic ' + btoa("hannes:Hans@0507"));  
-                                                            xhr.setRequestHeader('X-Auth-Token', "MvcAMS360"); 
+                                                            xhr.setRequestHeader('Authorization', 'Basic ' + btoa(account.userName + ":" + account.password));  
+                                                            xhr.setRequestHeader('X-Auth-Token', account.database); 
                                                         },
                                                         complete: function (xhr) {
                                                             viewModel.GetSpecValues();
@@ -316,8 +433,7 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                         error: function (xhr, ajaxOptions, thrownError) {
                                                             if (xhr.status == "403" || xhr.status == "401") {
                                                                 viewModel.set("SyncAssetTypeSpec", "You are not authorised to fetch specs");
-                                                            }
-                                                            else {
+                                                            } else {
                                                                 viewModel.set("SyncAssetTypeSpec", "Failed to download specs");
                                                             }
                                                         },
@@ -326,8 +442,7 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                                 var result = model.GetAssetTypeSpecResult;
                                                                 data.InsertAssetTypeSpec(result);
                                                                 viewModel.set("SyncAssetTypeSpec", "Successful: Specs");
-                                                            }
-                                                            catch (e) {
+                                                            } catch (e) {
                                                                 viewModel.set("SyncAssetTypeSpec", "Failed to downloaded specs: " + e);
                                                             }
                                                         }
@@ -341,21 +456,18 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                         type: "GET",
                                                         beforeSend: function (xhr) {
                                                             viewModel.set("SyncSpecValue", "Downloading spec values...");
-                                                            xhr.setRequestHeader('Authorization', 'Basic ' + btoa("hannes:Hans@0507"));  
-                                                            xhr.setRequestHeader('X-Auth-Token', "MvcAMS360"); 
+                                                            xhr.setRequestHeader('Authorization', 'Basic ' + btoa(account.userName + ":" + account.password));  
+                                                            xhr.setRequestHeader('X-Auth-Token', account.database); 
                                                         },
                                                         complete: function (xhr) {
-                                                            if (viewModel.IncludeAssets)
-                                                            {
-                                                                  viewModel.GetAssets();
+                                                            if (viewModel.IncludeAssets) {
+                                                                viewModel.GetAssets();
                                                             }
-                                                          
                                                         },
                                                         error: function (xhr, ajaxOptions, thrownError) {
                                                             if (xhr.status == "403" || xhr.status == "401") {
                                                                 viewModel.set("SyncSpecValue", "You are not authorised to fetch spec values");
-                                                            }
-                                                            else {
+                                                            } else {
                                                                 viewModel.set("SyncSpecValue", "Failed to download spec values");
                                                             }
                                                         },
@@ -364,23 +476,39 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                                 var result = model.GetSpecValuesResult;
                                                                 data.InsertSpecValues(result);
                                                                 viewModel.set("SyncSpecValue", "Successful: Spec values");
-                                                            }
-                                                            catch (e) {
+                                                            } catch (e) {
                                                                 viewModel.set("SyncSpecValue", "Failed to downloaded spec values: " + e);
                                                             }
                                                         }
                                                     });
                                          },
-                                         GetAssets: function() {
-                                               var URL = utils.ServiceURL + "/GetAssets";
+                                         GetProjectForAssets: function() {
+                                             $("#SyncProjectPage").show().data().kendoMobileModalView.open();
+                                             var callback = function(tx, result) {
+                                                 var htmlSelect = "";
+              
+                                                 if (result != null && result.rows != null) {
+                                                     for (var i = 0; i < result.rows.length; i++) {
+                                                         var row = result.rows.item(i);
+                                                      
+                                                         htmlSelect += "<li><a onclick=app.views.sync.viewModel.GetAssets('" + row.ID + "') class='km-listview-link' data-role='listview-link'>" + row.Name + "</a></li>";
+                                                     }
+                                                     $("#ProjectSyncList").html(htmlSelect);
+                                                 }
+                                             }
+                                             data.GetProjects(callback); 
+                                         },
+                                         GetAssets:function(ProjectID) {
+                                             $("#SyncProjectPage").data().kendoMobileModalView.close();
+                                             var URL = utils.ServiceURL + "/GetAssets";
                                              $.ajax({
                                                         url: URL,
                                                         dataType: 'json',
                                                         type: "GET",
                                                         beforeSend: function (xhr) {
                                                             viewModel.set("SyncAsset", "Downloading assets...");
-                                                            xhr.setRequestHeader('Authorization', 'Basic ' + btoa("hannes:Hans@0507"));  
-                                                            xhr.setRequestHeader('X-Auth-Token', "MvcAMS360"); 
+                                                            xhr.setRequestHeader('Authorization', 'Basic ' + btoa(account.userName + ":" + account.password));  
+                                                            xhr.setRequestHeader('X-Auth-Token', account.database); 
                                                         },
                                                         complete: function (xhr) {
                                                             utils.hideLoading();
@@ -388,29 +516,21 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                         error: function (xhr, ajaxOptions, thrownError) {
                                                             if (xhr.status == "403" || xhr.status == "401") {
                                                                 viewModel.set("SyncAsset", "You are not authorised to fetch assets");
-                                                            }
-                                                            else {
+                                                            } else {
                                                                 viewModel.set("SyncAsset", "Failed to download assets");
                                                             }
                                                         },
                                                         success: function (model) {
                                                             try {
-                                                                  var result = model.GetAssetsResult;
+                                                                var result = model.GetAssetsResult;
                                                                 data.InsertAssets(result);
                                                                 viewModel.set("SyncAsset", "Successful: Assets");
-                                                            }
-                                                            catch (e) {
+                                                            } catch (e) {
                                                                 viewModel.set("SyncAsset", "Failed to downloaded assets: " + e);
                                                             }
                                                         }
                                                     });
-                                             
                                          },
-                                        
-                                         
-                                         
-                                         
-                                         
                                          GetInfraAreas: function() {
                                              $.ajax(utils.ServiceURL + "/GetInfraAreas", {
                                                         beforeSend: function (xhr) {
@@ -430,8 +550,7 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                                 var result = dataResult.GetInfraAreasResult;
                                                                 data.InsertInfrAreas(result);
                                                                 viewModel.set("SyncArea", "Successfully downloaded areas");
-                                                            }
-                                                            catch (e) {
+                                                            } catch (e) {
                                                                 viewModel.set("SyncArea", "Failed to downloaded areas: " + e);
                                                             }
                                                         }
@@ -444,8 +563,7 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                      if (result.rows.length == 0) {
                                                          viewModel.UploadPhotos();
                                                          viewModel.set("SyncAssetCapture", "Success: No assets were found on the mobile device to sync");
-                                                     }
-                                                     else {
+                                                     } else {
                                                          var CS = [];
                                                          for (var i = 0; i < result.rows.length; i++) {
                                                              var SpecList = [];
@@ -476,8 +594,7 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                                                                 viewModel.set("SyncAssetCapture", "Successfully send assets");
                                                                                                 data.ReCreateAssetCapture();
                                                                                                 viewModel.UploadPhotos();
-                                                                                            }
-                                                                                            else {
+                                                                                            } else {
                                                                                                 viewModel.set("SyncAssetCapture", "Failed to send Assets");
                                                                                                 viewModel.set("SyncPhotos", "The assets failed. Not Photos were synced");
                                                                                             }
@@ -492,7 +609,7 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                                  }
                                                              })(i)
                            
-                                                             data.GetSpecCapture(callback2, result.rows.item(i).AssetBarCode);
+                                                             data.GetSpecCapture(callback2, result.rows.item(i).AssetBarCode, result.rows.item(i).ProjectID);
                                                          }
                                                      }
                                                  }
@@ -503,8 +620,7 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                              //Do the Lines
                                              if (utils.mFeatureLine == null) {
                                                  viewModel.set("SyncGISLines", "Success: No GIS line data to send");
-                                             }
-                                             else {
+                                             } else {
                                                  var CS = [];
                                                  CS.push({ GeoData: JSON.stringify(utils.mFeatureLine), GeoType: "Line", AreaCode: utils.area, GroupingName: utils.grouping });
 
@@ -519,8 +635,7 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                                     viewModel.set("SyncGISLines", "Successfully send GIS Lines");
 
                                                                     utils.mFeatureLine = null;
-                                                                }
-                                                                else {
+                                                                } else {
                                                                     viewModel.set("SyncGISLines", "Failed to send GIS Lines");
                                                                 }
                                                             },
@@ -534,8 +649,7 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
             
                                              if (utils.mFeaturePoint == null) {
                                                  viewModel.set("SyncGISPoints", "Success: No GIS point data to send");
-                                             }
-                                             else {
+                                             } else {
                                                  var CS = [];
                                                  CS.push({ GeoData: JSON.stringify(utils.mFeaturePoint), GeoType: "Point", AreaCode: utils.area, GroupingName: utils.grouping });
 
@@ -550,8 +664,7 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                                     viewModel.set("SyncGISPoints", "Successfully send GIS Points");
                                
                                                                     utils.mFeaturePoint = null;
-                                                                }
-                                                                else {
+                                                                } else {
                                                                     viewModel.set("SyncGISPoints", "Failed to send GIS Points");
                                                                 }
                                                             },
@@ -565,8 +678,7 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
           
                                              if (utils.mFeaturePolygon == null) {
                                                  viewModel.set("SyncGISPolygons", "Success: No GIS polygon data to send");
-                                             }
-                                             else {
+                                             } else {
                                                  var CS = [];
                                                  CS.push({ GeoData: JSON.stringify(utils.mFeaturePolygon), GeoType: "Polygon", AreaCode: utils.area, GroupingName: utils.grouping });
 
@@ -581,8 +693,7 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                                     viewModel.set("SyncGISPolygons", "Successfully send GIS Polygons");
 
                                                                     utils.mFeaturePolygon = null;
-                                                                }
-                                                                else {
+                                                                } else {
                                                                     viewModel.set("SyncGISPolygons", "Failed to send GIS Polygons");
                                                                 }
                                                             },
@@ -598,8 +709,7 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
                                                  if (Photoresult != null && Photoresult.rows != null) {
                                                      if (Photoresult.rows.length == 0) {
                                                          viewModel.set("SyncPhotos", "Success: No photos were found on the mobile device to sync");
-                                                     }
-                                                     else {
+                                                     } else {
                                                          for (var i = 0; i < Photoresult.rows.length; i++) {
                                                              var options = new FileUploadOptions(); 
 
@@ -659,6 +769,26 @@ define(["kendo","app/account","app/data", "app/utils", "app/app"], function (ken
  
         beforeShow: function (beforeShowEvt) {
             // ... before show event code ...
+            viewModel.set("SyncAssetTypeSpecValue", "Asset Type Spec Values"); 
+            viewModel.set("SyncAssetTypeSpecLink", "Asset Type Link"); 
+            viewModel.set("SyncAssetTypeSpec", "Asset Type Spec"); 
+            viewModel.set("SyncSpecValue", "Spec Values"); 
+            viewModel.set("SyncAsset", "Assets"); 
+            viewModel.set("SyncClassification", "Classifications"); 
+            viewModel.set("SyncAssetType", "Asset Types"); 
+            viewModel.set("SyncRoom", "Rooms"); 
+            viewModel.set("SyncBuilding", "Buildings"); 
+            viewModel.set("SyncProject", "Projects"); 
+            viewModel.set("SyncSite", "Sites"); 
+            viewModel.set("SyncArea", "Area"); 
+            viewModel.set("SyncUser", "Users"); 
+            viewModel.set("SyncAssetCapture", "Assets"); 
+            viewModel.set("SyncGISLines", "Ready to sync GIS Lines"); 
+            viewModel.set("SyncGISPoints", "Ready to sync GIS Points"); 
+            viewModel.set("SyncGISPolygons", "Ready to sync GIS Polygons"); 
+            viewModel.set("SyncPhotos", "Ready to sync Photos"); 
+            viewModel.set("SyncFailPhotos", ""); 
+            viewModel.set("IncludeAssets", false); 
         },
  
         show: function (showEvt) {

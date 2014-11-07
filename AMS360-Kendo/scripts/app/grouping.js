@@ -13,13 +13,13 @@ define(["kendo", "app/account", "app/utils"], function (kendo, account, utils) {
             // ... show event code ...
         },
          navgeneral: function(){
-             debugger;
+             
             utils.grouping = "General";
-            utils.navigate("#LocationView");
+            utils.navigate("#ProjectView");
         },
         navvehicle: function(){
             utils.grouping = "Vehicle";
-            utils.navigate("#LocationView");
+            utils.navigate("#ProjectView");
         },
         navroad: function(){
             utils.grouping = "Roads";

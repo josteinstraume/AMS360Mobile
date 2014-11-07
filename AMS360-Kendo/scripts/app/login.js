@@ -3,7 +3,7 @@ define(["kendo", "app/account","app/data", "app/utils"], function (kendo, accoun
                                          isBusy: true,
                                          userName: account.userName,
                                          errorMessage: "",
-                                         loginUsername: "Hannes",
+                                         loginUsername: "",
                                          loginPassword: "",
                                          selectedDatabase: "",
                                          databaseList: [],
@@ -78,6 +78,7 @@ define(["kendo", "app/account","app/data", "app/utils"], function (kendo, accoun
                                                                 utils.hideLoading();
                                                             },
                                                             error: function (xhr, ajaxOptions, thrownError) {
+                                                                debugger;
                                                                 if (xhr.status == "403" || xhr.status == "401")
                                                                     utils.showError("You are not authorised to fetch databases");
                                                             },
@@ -100,6 +101,7 @@ define(["kendo", "app/account","app/data", "app/utils"], function (kendo, accoun
  
         beforeShow: function (beforeShowEvt) {
             // ... before show event code ...
+            viewModel.set("loginPassword", "");
         },
  
         show: function (showEvt) {
